@@ -67,9 +67,6 @@ def index(request: Request):
     return templates.TemplateResponse("result.html", {"request": request})
 
 
-def to_markdown(text):
-  text = text.replace('•', '  *')
-  return Markdown(textwrap.indent(text, '> ', predicate=lambda _: True))
 
 
 def fetch_from_knowledge_graph(query):
@@ -91,7 +88,12 @@ def display_knowledge_graph_data(data, query):
         for item in data["itemListElement"]:
             name = item["result"]["name"]
             if name.lower() == query.lower() and name not in unique_names:  # Check if the name is unique
-                description = item["result"].get("detailedDescription", {}).get("articleBody", "No detailed description available")
+                # description = item["result"].get("detailedDescription", {}).get("articleBody", "No detailed description available")
+                model1 = genai.GenerativeModel('gemini-pro')
+                query="Give me a description of 50 words about" + name
+                response = model1.generate_content(query)
+                description=response.text
+
                 detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
                 item_image = item["result"].get("image", {}).get("contentUrl", "No image available")
                 
@@ -124,7 +126,7 @@ async def upload_image( request: Request,image_file: UploadFile = File(...)):
     
     res = response.text.split(',')
     res = [word.strip() for word in res if word.strip()]
-
+    
     object_results = []
     for obj in res:
         data = fetch_from_knowledge_graph(obj)
