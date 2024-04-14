@@ -42,7 +42,9 @@
             justify-content: center;
             border-radius: 18px;  
         }
-        
+        .search-dropdown {
+    margin-right: 5vw; /* Adjust the margin as needed */
+}
         
         .input-container input[type="file"] {
             display: none; /* Hide the default file input */
@@ -104,11 +106,10 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg " style="background-color: rgb(208, 15, 202);">
-  
+    <nav class="navbar navbar-expand-lg navbar-light" style="background-color: rgb(208, 15, 202);">
         <a class="navbar-brand food-munch-logo" href="#">
             <p style="font-size: 34px; color:white; font-family: 'MuseoModerno', sans-serif;">
-                <span><i class="fa-solid fa-magnifying-glass-chart" style="margin-right: 1vw;"></i> InSight
+                <span><i class="fa-solid fa-magnifying-glass-chart" style="margin-right: 1vw;"></i> InSight</span>
             </p>
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -116,15 +117,21 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
             <div id="navtools" class="navbar-nav ml-auto">
-               <a class="nav-link" style="font-size: 20px;color: #fff;" id="navitem4" href="/">Home</a>
-               <a class="nav-link" style="font-size: 20px;color: #fff;" id="navitem4" href="/">About </a>
-               <a class="nav-link" style="font-size: 20px;color: #fff;" id="navitem4" href="/">Upload </a>
-               <a class="nav-link" style="font-size: 20px; color: #fff;" id="navitem4" href="/">Upload a Live Photo</a>
-               
+                <a class="nav-link" style="font-weight: bold; font-size: 20px;margin-right: 2vw; color: #fff;" id="navitem1" href="/">Home</a>
+                <a class="nav-link" style="font-weight: bold; font-size: 20px;color: #fff;margin-right: 2vw; "  id="navitem2" href="#">About</a>
+                <div class="nav-item dropdown search-dropdown"> 
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold; font-size: 20px;color: #fff;">
+                        Search
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="/upload">Upload an Image</a>
+                        <a class="dropdown-item" href="/live">Upload a Live Item</a>
+                        <a class="dropdown-item" href="/search">Search by a Word</a>
+                    </div>
+                </div>
             </div>
         </div>
-    
-</nav>
+    </nav>
    
    
     <div class="container">
