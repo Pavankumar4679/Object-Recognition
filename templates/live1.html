@@ -20,7 +20,6 @@
  <style>
         body, html {
             height: 100%;
-            background-color: #f3eeeee0;
         }
         
         .container {
@@ -68,13 +67,12 @@
         }
 
         .result-container {
-            height: 60vh;
-            background-color: #fae3f4;
+            height: 20vh;
+            background-color: #fff;
             width: 40vw;
-            padding-top: 20px;
-            padding-bottom: 20px;
-            border-radius: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
@@ -105,7 +103,6 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-dark "  style="background-color: rgb(208, 15, 202);">
   
         <a class="navbar-brand food-munch-logo" href="#">
@@ -125,72 +122,138 @@
     
 </nav>
    
-  
-
-
-    <div class="row" style="display: flex;flex-direction: row;">
-         <!-- Add this code to display the uploaded image -->
-         <div class="result-container col-lg-4"  style=" margin:5%; text-align: center; margin-left: 12%; margin-right: 4%;">
-            <h1>Your Image</h1>
-    <img style= "width: 30vw; height: 40vh; " src="{{ image_path }}" alt="Uploaded Image">
-   </div>
-        <div class="result-container col-lg-4" style="margin:5%; margin-left: 4%; margin-right: 12%; ">
-            <h1 style="margin-bottom: 3vh; text-align: center;"> Know Your Objects :</h1>
-            <div >
-                <ul > 
-                    {% for object in res %}
-                    <li style="font-size: 24px;">{{ object }}</li>
-                    {% endfor %}
-                </ul>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-12 col-lg-6">
+                <div class="left-container">
+                    <h2>Welcome to Our Object Detection Website</h2>
+                    <img src="./static/4537623.jpg"/ style="width: 30vw; height: 40vh;">
+                </div>
             </div>
+            <div class="right-container col-lg-5 col-12 " style="padding-top: 4vh; width: 40vw; height: 48vh;">
+                <div class="img-area" style="background-color: #ddd;" data-img="" >
 
-        </div>
-    </div>    
+                    <video id="video" autoplay></video>
+                    <i class='bx bxs-cloud-upload icon'></i>
+                    <h3 style="margin-bottom:20vh ;">Click your Object Image</h3>
+                </div>
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                  <button id="startButton" class="custom-button mb-3" style="background-color: #9708b7;">Start Camera</button>
+                  <button id="snapButton" class="custom-button mb-3" style="background-color: #9708b7;">Take Snapshot</button>
+                  <canvas id="canvas" style="display: none;"></canvas>
 
-
-
-
-        <h1 style="margin-bottom: 3vh; margin-left: 2vw;margin-top: 3vh;"> Object Insights :</h1>
-        <div style="padding-left: 2%; padding-right: 2%;">
-            <div class="row">
-                {% for result in object_results %}
-                    <div class="col-12 col-md-4 col-lg-4 mb-3">
-                        <div class="shadow menu-item-card" style="padding: 8px;">
-                            <img src="{{ result.item_image }}" class="menu-item-image w-100" />
-                            <h1 class="menu-card-title"><b>{{ result.Name }}</b></h1>
-                            <p style="text-align: justify;margin: 2%;">{{ result.Description }}</p>
-                            <p><a href="{{ result['Detailed Description'] }}">Detailed Description -></a></p>
-                        </div>
-                    </div>
-                {% endfor %}
+                </div>
+           
             </div>
-                
         </div>
-   
-
+    </div>
+<!-- Form for submitting the snapshot -->
+<form id="imageForm" enctype="multipart/form-data" style="display: none;">
+    <input type="file" id="imageInput" name="image_file">
+</form>
     
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" integrity="sha384-GVjR/gg+8sv7J5qLgEVSvL15B/1+/txcP7q2c4FrxHfORgvbX+YK3p2MvEQh27I5" crossorigin="anonymous"></script>
-    <script>
-        document.getElementById("imageFileInput").addEventListener("change", function(event) {
-         const file = event.target.files[0];
-         const reader = new FileReader();
-         
-         reader.onload = function(e) {
-             const imgArea = document.querySelector(".img-area");
-             imgArea.innerHTML = ''; 
-             
-             const img = document.createElement("img");
-             img.src = e.target.result;
-             img.style.maxWidth = "100%";
-             img.style.maxHeight = "100%";
-             imgArea.appendChild(img);
-         };
-         
-         reader.readAsDataURL(file);
-     });
+ 
+ <!-- Include JavaScript -->
+ <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startButton = document.getElementById('startButton');
+        const snapButton = document.getElementById('snapButton');
+        const imageForm = document.getElementById('imageForm');
+        const constraints = {
+            video: true
+        };
 
-     
-   </script>
+        let stream; // To store the video stream
+
+        startButton.addEventListener('click', async () => {
+            try {
+                // Get access to the webcam
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+            } catch (err) {
+                console.error('Error accessing webcam:', err);
+            }
+        });
+
+        snapButton.addEventListener('click', () => {
+    // Get the context of the canvas
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert the canvas content to a data URL
+    const imgData = canvas.toDataURL('image/png');
+
+    // Create a Blob from the base64 data
+    const blob = base64ToBlob(imgData);
+
+    // Create a FormData object
+    const formData = new FormData();
+
+    // Append the Blob as an UploadFile to the FormData
+    formData.append('image_file', blob, 'snapshot.png');
+
+    fetch('/submit_snapshot', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.text(); // Change to response.text() to extract HTML response
+    })
+    .then(data => {
+        console.log(data);
+        // Redirect to the result page
+        document.open();
+        document.write(data); // Write the HTML response to the document
+        document.close();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+
+    // Stop the camera stream
+    stopCameraStream();
+});
+
+
+        // Function to stop the camera stream
+        function stopCameraStream() {
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => {
+                    track.stop();
+                });
+                video.srcObject = null;
+            }
+        }
+
+        // Function to convert base64 to Blob
+        function base64ToBlob(base64Data) {
+            const byteCharacters = atob(base64Data.split(',')[1]);
+            const byteArrays = [];
+            for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                const slice = byteCharacters.slice(offset, offset + 512);
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            return new Blob(byteArrays, { type: 'image/png' });
+        }
+    });
+   
+
+</script>
+
+
 </body>
 </html>

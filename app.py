@@ -19,7 +19,7 @@ import os
 from dotenv import load_dotenv
 import pathlib
 import textwrap
-
+from fastapi import HTTPException
 import google.generativeai as genai
 import PIL.Image
 
@@ -37,7 +37,9 @@ from fastapi.templating import Jinja2Templates
 import shutil
 import requests
 import string
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
+import base64
+import uuid
 
 
 load_dotenv()
@@ -66,6 +68,11 @@ def index(request: Request):
 @app.get('/result')
 def index(request: Request):
     return templates.TemplateResponse("result.html", {"request": request})
+
+@app.get('/live')
+def login(request: Request):
+    return templates.TemplateResponse("live1.html", {"request": request})
+
 
 
 
@@ -123,6 +130,8 @@ def display_knowledge_graph_data(data, query,upimage):
                     results.append(result_dict)
                     unique_names.add(name)
 
+    print(unique_names)
+
     return results
 
 
@@ -166,6 +175,50 @@ async def upload_image( request: Request,image_file: UploadFile = File(...)):
 
 
 
+@app.post("/submit_snapshot", response_class=HTMLResponse)
+async def save_snapshot(request: Request, image_file: UploadFile = File(...)):
+        # Define the path where you want to save the image
+        static_folder = "static"  # Or any other folder where you want to save the images
+        image_path = os.path.join(static_folder, image_file.filename)
+        print(image_path)
+        # Save the image
+        with open(image_path, "wb") as img:
+            content = await image_file.read()
+            img.write(content)
+        
+        
+        img = PIL.Image.open(image_path)
+
+        # Assuming model.generate_content() is an asynchronous operation
+        response = model.generate_content(["Identify the only some important things that are in the image.I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image", img], stream=True)
+        response.resolve()
+        
+        res = response.text.split(',')
+        res = [word.strip() for word in res if word.strip()]
+        
+        object_results = []
+        for obj in res:
+            data = fetch_from_knowledge_graph(obj)
+            object_data = display_knowledge_graph_data(data, obj, image_path)  # Assuming save_path is defined somewhere
+            object_results.extend(object_data)
+        
+        
+        context = {
+            "request": request,
+            "res": res,
+            "object_results": object_results,
+            "image_path": image_path
+        }
+        
+        print(context)
+
+        return templates.TemplateResponse("result.html", context)
+  
     
+
+
+
+    
+
 if __name__ == '__main__':
     uvicorn.run(app, host='0.0.0.0', port=8000)
