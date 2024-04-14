@@ -62,16 +62,21 @@ def index(request: Request):
     return templates.TemplateResponse("open.html", {"request": request})
 
 @app.get('/upload')
-def index(request: Request):
+def upload(request: Request):
     return templates.TemplateResponse("upload.html", {"request": request})
 
 @app.get('/result')
-def index(request: Request):
+def result(request: Request):
     return templates.TemplateResponse("result.html", {"request": request})
 
 @app.get('/live')
-def login(request: Request):
-    return templates.TemplateResponse("live1.html", {"request": request})
+def live(request: Request):
+    return templates.TemplateResponse("live.html", {"request": request})
+
+
+@app.get('/search')
+def live(request: Request):
+    return templates.TemplateResponse("search.html", {"request": request})
 
 
 
@@ -136,6 +141,35 @@ def display_knowledge_graph_data(data, query,upimage):
 
 
 
+def display_knowledge_graph_data1(data, query):
+    results = []
+    unique_names = set()  # Maintain a set of unique names
+    
+    if "itemListElement" in data:
+        for item in data["itemListElement"]:
+            name = item["result"]["name"]
+            print(name)
+            if name.lower() == query.lower() and name not in unique_names:  # Check if the name is unique
+                item_image = item["result"].get("image", {}).get("contentUrl", "No image available")
+                description = item["result"].get("detailedDescription", {}).get("articleBody", "No detailed description available")
+
+                detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
+
+                result_dict = {
+                        "Name": name,
+                        "Description": description,
+                        "Detailed Description": detailed_description,
+                        "item_image": item_image
+                    }
+                results.append(result_dict)
+                unique_names.add(name)
+               
+    print(unique_names)
+
+    return results
+
+
+
 @app.post("/upload_image", response_class=HTMLResponse)
 async def upload_image( request: Request,image_file: UploadFile = File(...)):
     image_path = f"{UPLOAD_FOLDER}/{image_file.filename}"
@@ -172,6 +206,29 @@ async def upload_image( request: Request,image_file: UploadFile = File(...)):
 
 
     return templates.TemplateResponse("result.html", context)
+
+
+
+@app.post("/search_objects", response_class=HTMLResponse)
+async def search_objects(request: Request, search_word: str = Form(...)):
+    
+   
+    object_results = []
+    data = fetch_from_knowledge_graph(search_word)
+    object_data = display_knowledge_graph_data1(data, search_word)
+    
+    object_results.extend(object_data)
+    
+    print(object_results)
+
+    
+    context = {
+        "request": request,
+        "object_results":object_results
+    }
+    
+    return templates.TemplateResponse("search.html", context)
+
 
 
 
