@@ -125,6 +125,11 @@
             margin-right: 5vw;
             /* Adjust the margin as needed */
         }
+        .img-fluid
+        {
+            height: 50vh; 
+            width: 40vw;
+        }
 
         /* Adjustments for smaller screens */
         @media (max-width: 768px) {
@@ -136,6 +141,10 @@
             .left-container {
                 margin-left: 0;
                 margin-right: 0;
+            }
+            .img-fluid
+            { 
+                width: 80vw;
             }
         }
     </style>
@@ -180,7 +189,7 @@
 
             <div class="result-container col-lg-4 col-md-12" style=" margin:5%; text-align: center;">
                 <h1>Your Image</h1>
-                <img class="img-fluid" src="{{ image_path }}" alt="Uploaded Image">
+                <img class="img-fluid"  src="{{ image_path }}" alt="Uploaded Image">
             </div>
             <div class="result-container col-lg-4 col-md-12" style="margin:5%;">
                 <h1 style="margin-bottom: 3vh; text-align: center;"> Know Your Objects :</h1>
