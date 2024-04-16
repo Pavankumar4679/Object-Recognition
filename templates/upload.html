@@ -59,7 +59,7 @@
 
     <!-- Main Content -->
     <div class="container-fluid">
-        <div class="row justify-content-center" >
+        <div class="row justify-content-center">
             <div class="col-lg-6 col-md-6 col-sm-12">
                 <div class="left-container text-center">
                     <h2>Welcome to Our Object Detection Website</h2>
@@ -67,7 +67,7 @@
                 </div>
             </div>
             <div class="d-flex flex-column justify-content-center col-lg-5 col-md-6 col-sm-12 mt-4 mt-md-0">
-                <div class=" right-container text-center  p-4" style="background-color: rgba(230, 38, 224, 0.853) ;border-radius:40px;">
+                <div class="right-container text-center p-4" style="background-color: rgba(230, 38, 224, 0.853); border-radius: 40px;">
                     <form action="/upload_image" method="post" enctype="multipart/form-data" id="uploadForm">
                         <div class="img-area mb-3" style="background-color: #ddd;">
                             <i class='bx bxs-cloud-upload icon'></i>
@@ -76,6 +76,8 @@
                         </div>
                         <div class="align-items-center">
                             <input class="select-image mb-3" type="file" name="image_file" accept="image/*" required id="imageFileInput">
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
                             <button class="custom-button" style="background-color: #9708b7;" type="submit">Upload Image</button>
                         </div>
                     </form>
@@ -90,24 +92,43 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         document.getElementById("imageFileInput").addEventListener("change", function(event) {
-         const file = event.target.files[0];
-         const reader = new FileReader();
-         
-         reader.onload = function(e) {
-             const imgArea = document.querySelector(".img-area");
-             imgArea.innerHTML = ''; 
-             
-             const img = document.createElement("img");
-             img.src = e.target.result;
-             img.style.maxWidth = "100%";
-             img.style.maxHeight = "100%";
-             imgArea.appendChild(img);
-         };
-         
-         reader.readAsDataURL(file);
-     });
+            const file = event.target.files[0];
+            const reader = new FileReader();
 
-     
-   </script>
+            reader.onload = function(e) {
+                const imgArea = document.querySelector(".img-area");
+                imgArea.innerHTML = '';
+
+                const img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.maxWidth = "100%";
+                img.style.maxHeight = "100%";
+                imgArea.appendChild(img);
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var currentLat = position.coords.latitude;
+                    var currentLng = position.coords.longitude;
+                    console.log("Current Latitude: " + currentLat);
+                    console.log("Current Longitude: " + currentLng);
+                    // Update hidden input fields with latitude and longitude
+                    document.getElementById("latitude").value = currentLat;
+                    document.getElementById("longitude").value = currentLng;
+                }, function(error) {
+                    console.error("Error getting current location: " + error.message);
+                });
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
+        }
+
+        // Call getCurrentLocation function when the page loads
+        getCurrentLocation();
+    </script>
 </body>
 </html>

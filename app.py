@@ -37,10 +37,11 @@ from fastapi.templating import Jinja2Templates
 import shutil
 import requests
 import string
-# from bs4 import BeautifulSoup
+
 import base64
 import uuid
 
+import re
 
 load_dotenv()
 
@@ -79,7 +80,12 @@ def live(request: Request):
     return templates.TemplateResponse("search.html", {"request": request})
 
 
-
+def get_nearby_stores(location, object_name, radius=1000):
+        api_key = 'AIzaSyB8zWPtv1G6B05tim27903BAeUQXjGS9dc'  # Replace with your Google Maps API key
+        url = f'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={location}&radius={radius}&keyword={object_name}&key={api_key}'
+        response = requests.get(url)
+        data = response.json()
+        return data['results']
 
 
 def fetch_from_knowledge_graph(query):
@@ -93,10 +99,9 @@ def fetch_from_knowledge_graph(query):
     data = response.json()
     return data
 
-def display_knowledge_graph_data(data, query,upimage):
+def display_knowledge_graph_data(data, query,upimage,location):
     results = []
-    unique_names = set()  # Maintain a set of unique names
-    
+    unique_names = set() 
     if "itemListElement" in data:
         for item in data["itemListElement"]:
             name = item["result"]["name"]
@@ -109,11 +114,20 @@ def display_knowledge_graph_data(data, query,upimage):
 
                     detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
                     
+                    nearby_stores = get_nearby_stores(location, name)
+                
+                    locations = []
+                    for store in nearby_stores:
+                        s = store['name'] + ' ' + store['vicinity']
+                        locations.append(s)
+
+                    
                     result_dict = {
                         "Name": name,
                         "Description": description,
                         "Detailed Description": detailed_description,
-                        "item_image": item_image
+                        "item_image": item_image,
+                        "locations":locations
                     }
                     results.append(result_dict)
                     unique_names.add(name)
@@ -125,12 +139,20 @@ def display_knowledge_graph_data(data, query,upimage):
 
                     detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
                     item_image=upimage
+                    
+                    nearby_stores = get_nearby_stores(location, name)
+                
+                    locations = []
+                    for store in nearby_stores:
+                        s = store['name'] + ' ' + store['vicinity']
+                        locations.append(s)
 
                     result_dict = {
                         "Name": name,
                         "Description": description,
                         "Detailed Description": detailed_description,
-                        "item_image": item_image
+                        "item_image": item_image,
+                        "locations":locations
                     }
                     results.append(result_dict)
                     unique_names.add(name)
@@ -143,8 +165,12 @@ def display_knowledge_graph_data(data, query,upimage):
 
 def display_knowledge_graph_data1(data, query):
     results = []
-    unique_names = set()  # Maintain a set of unique names
+    unique_names = set() 
     
+
+   
+    location = f'{latitude},{longitude}'
+
     if "itemListElement" in data:
         for item in data["itemListElement"]:
             name = item["result"]["name"]
@@ -154,13 +180,24 @@ def display_knowledge_graph_data1(data, query):
                 description = item["result"].get("detailedDescription", {}).get("articleBody", "No detailed description available")
 
                 detailed_description = item["result"].get("detailedDescription", {}).get("url", "No detailed description available")
+                
+                nearby_stores = get_nearby_stores(location, name)
+                
+                locations = []
+                for store in nearby_stores:
+                    s = store['name'] + ' ' + store['vicinity']
+                    locations.append(s)
 
+                 
+                
                 result_dict = {
                         "Name": name,
                         "Description": description,
                         "Detailed Description": detailed_description,
-                        "item_image": item_image
+                        "item_image": item_image,
+                        "locations":locations
                     }
+
                 results.append(result_dict)
                 unique_names.add(name)
                
@@ -171,7 +208,7 @@ def display_knowledge_graph_data1(data, query):
 
 
 @app.post("/upload_image", response_class=HTMLResponse)
-async def upload_image( request: Request,image_file: UploadFile = File(...)):
+async def upload_image( request: Request,image_file: UploadFile = File(...),latitude: float = Form(...), longitude: float = Form(...) ):
     image_path = f"{UPLOAD_FOLDER}/{image_file.filename}"
     save_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
     
@@ -180,6 +217,8 @@ async def upload_image( request: Request,image_file: UploadFile = File(...)):
         image.write(content)
          
     img = PIL.Image.open(image_path)
+    
+    location=f'{latitude},{longitude}'
 
     response = model.generate_content(["Identify the only some important things that are in the image.I should have the response only consist of names of all the objects name in a single word for each one without any stopwords in the object names separated by comma in the image", img], stream=True)
     response.resolve()
@@ -189,9 +228,10 @@ async def upload_image( request: Request,image_file: UploadFile = File(...)):
     
     object_results = []
     for obj in res:
-        data = fetch_from_knowledge_graph(obj)
-        object_data = display_knowledge_graph_data(data, obj,save_path)
+        data = fetch_from_knowledge_graph(obj)        
+        object_data = display_knowledge_graph_data(data, obj,save_path,location)
         object_results.extend(object_data)
+        
     
     print(object_results)
 

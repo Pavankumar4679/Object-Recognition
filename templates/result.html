@@ -226,6 +226,15 @@
                             <p style="text-align: justify;margin: 2%;">{{ result.Description }}</p>
                             <p><a href="{{ result['Detailed Description'] }}">Detailed Description
                                     -></a></p>
+                            <h3>Nearby Stores:</h3>        
+                                    <p>
+                                        <ul>
+                                        {% for location in result.locations %}
+                                         <li>   {{ location }} </li><br>
+                                        {% endfor %}
+                                        </ul>
+                                    </p>
+                                         
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

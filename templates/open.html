@@ -186,7 +186,27 @@
          reader.readAsDataURL(file);
      });
 
-     
+
+     function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var currentLat = position.coords.latitude;
+                var currentLng = position.coords.longitude;
+                console.log("Current Latitude: " + currentLat);
+                console.log("Current Longitude: " + currentLng);
+               
+            }, function(error) {
+                console.error("Error getting current location: " + error.message);
+            });
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+        }
+    }
+    
+    
+   </script>
+   <script>
+    getCurrentLocation(); 
    </script>
 </body>
 </html>
