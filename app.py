@@ -163,14 +163,12 @@ def display_knowledge_graph_data(data, query,upimage,location):
 
 
 
-def display_knowledge_graph_data1(data, query):
+def display_knowledge_graph_data1(data, query,location):
     results = []
     unique_names = set() 
     
 
    
-    location = f'{latitude},{longitude}'
-
     if "itemListElement" in data:
         for item in data["itemListElement"]:
             name = item["result"]["name"]
@@ -250,12 +248,13 @@ async def upload_image( request: Request,image_file: UploadFile = File(...),lati
 
 
 @app.post("/search_objects", response_class=HTMLResponse)
-async def search_objects(request: Request, search_word: str = Form(...)):
+async def search_objects(request: Request, search_word: str = Form(...),latitude: float = Form(...), longitude: float = Form(...)):
     
+    location = f'{latitude},{longitude}'
    
     object_results = []
     data = fetch_from_knowledge_graph(search_word)
-    object_data = display_knowledge_graph_data1(data, search_word)
+    object_data = display_knowledge_graph_data1(data, search_word,location)
     
     object_results.extend(object_data)
     
