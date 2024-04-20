@@ -81,7 +81,7 @@ def live(request: Request):
 
 
 def get_nearby_stores(location, object_name, radius=1000):
-        api_key = 'AIzaSyB8zWPtv1G6B05tim27903BAeUQXjGS9dc'  # Replace with your Google Maps API key
+        api_key = 'AIzaSyD1ZOf60BMVT3aDDbjggkroH1J-cpucAzY'  # Replace with your Google Maps API key
         url = f'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={location}&radius={radius}&keyword={object_name}&key={api_key}'
         response = requests.get(url)
         data = response.json()
